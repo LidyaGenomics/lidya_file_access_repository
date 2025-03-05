@@ -14,7 +14,7 @@ A Python package that provides a unified interface for accessing files from diff
 ### From Git
 
 ```bash
-pip install git+https://github.com/LidyaGenomics/lidya_file_access_repository.git
+pip install git+https://github.com/LidyaGenomics/lidya_file_access_repository.git@0.1.0
 ```
 
 ## Usage
