@@ -42,20 +42,25 @@ from lidya_file_access_repository import FileAccessRepositoryFactory
 file_access_repository = FileAccessRepositoryFactory.create()
 ```
 
-Then you can use the file access repository to get and put files.
+Then you can use the file access repository to get, put, and delete files.
 
 ```python
 # Get a file from storage and save it locally
 # file_type: The type or category of the file
 # file_name: Name of the file to retrieve
 # to_path: Local path where the retrieved file should be saved
-file_access_repository.get_file(file_type="documents", file_name="report.pdf", to_path="/local/path/report.pdf")
+file_access_repository.get_file(file_type="fastq", file_name="subsamp_10k_AD_1211_L001_R1.fastq.gz", to_path="opt/fastq_files/subsamp_10k_AD_1211_L001_R1.fastq.gz")
 
 # Put a local file into storage
 # file_type: The type or category of the file
 # file_name: Name to give the file in storage
 # from_path: Local path of the file to store
-file_access_repository.put_file(file_type="images", file_name="profile.jpg", from_path="/local/path/profile.jpg")
+file_access_repository.put_file(file_type="fastq", file_name="subsamp_10k_AD_1211_L001_R1.fastq.gz", from_path="opt/fastq_files/subsamp_10k_AD_1211_L001_R1.fastq.gz")
+
+# Delete a file from storage
+# file_type: The type or category of the file
+# file_name: Name of the file to delete
+file_access_repository.delete_file(file_type="fastq", file_name="subsamp_10k_AD_1211_L001_R1.fastq.gz")
 ```
 
 ## Error Handling
@@ -76,6 +81,14 @@ try:
     file_access_repository.put_file("documents", "report.pdf", "/local/path/report.pdf")
 except IOError:
     print("Error writing the file to storage")
+
+# When deleting a file
+try:
+    file_access_repository.delete_file("documents", "report.pdf")
+except FileNotFoundError:
+    print("The file to delete does not exist in storage")
+except IOError:
+    print("Error deleting the file from storage")
 ```
 
 ## License

@@ -30,8 +30,6 @@ class MinIOFileAccessRepository(FileAccessRepository):
         self.secure = secure
         self.cert_check = cert_check
 
-        # TODO: Initialize S3 client
-
         self.client = Minio(
             endpoint=endpoint,
             access_key=access_key,
@@ -117,4 +115,40 @@ class MinIOFileAccessRepository(FileAccessRepository):
         except Exception as e:
             raise IOError(
                 f"Error uploading file from {from_path} to S3 {file_type}/{file_name}: {str(e)}"
+            )
+
+    def delete_file(self, file_type: str, file_name: str) -> None:
+        """
+        Deletes a file from MinIO storage.
+
+        Args:
+            file_type: The type or category of the file (bucket name)
+            file_name: Name of the file to delete (object name)
+
+        Returns:
+            None
+
+        Raises:
+            FileNotFoundError: If the file does not exist
+            IOError: If there is an error deleting the file
+        """
+        try:
+            # Check if bucket exists
+            found = self.client.bucket_exists(file_type)
+            if not found:
+                raise FileNotFoundError(f"Bucket {file_type} does not exist")
+
+            # Delete the object
+            self.client.remove_object(file_type, file_name)
+            print(
+                "Object",
+                file_name,
+                "successfully deleted from bucket",
+                file_type,
+            )
+        except FileNotFoundError:
+            raise
+        except Exception as e:
+            raise IOError(
+                f"Error deleting file from S3 {file_type}/{file_name}: {str(e)}"
             )

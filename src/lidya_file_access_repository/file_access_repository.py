@@ -41,3 +41,20 @@ class FileAccessRepository(ABC):
         Raises:
             IOError: If there is an error writing the file
         """
+
+    @abstractmethod
+    def delete_file(self, file_type: str, file_name: str) -> None:
+        """
+        Deletes a file from the storage system.
+
+        Args:
+            file_type: The type or category of the file
+            file_name: Name of the file to delete
+
+        Returns:
+            None
+
+        Raises:
+            FileNotFoundError: If the file does not exist
+            IOError: If there is an error deleting the file
+        """
