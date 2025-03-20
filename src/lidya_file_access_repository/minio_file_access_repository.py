@@ -1,4 +1,6 @@
 from minio import Minio
+import os
+import hashlib
 
 from .file_access_repository import FileAccessRepository
 
@@ -41,6 +43,7 @@ class MinIOFileAccessRepository(FileAccessRepository):
     def get_file(self, file_type: str, file_name: str, to_path: str) -> None:
         """
         Retrieves a file from S3 and saves it to the specified path.
+        If the local file already exists and matches the remote file, no download occurs.
 
         Args:
             file_type: The type or category of the file
@@ -55,6 +58,36 @@ class MinIOFileAccessRepository(FileAccessRepository):
             IOError: If there is an error reading the file from S3
         """
         try:
+            # Check if the local file already exists
+            if os.path.exists(to_path):
+                # Get remote file stats
+                try:
+                    remote_stat = self.client.stat_object(file_type, file_name)
+                    remote_size = remote_stat.size
+                    remote_etag = remote_stat.etag
+                    
+                    # Get local file size
+                    local_size = os.path.getsize(to_path)
+                    
+                    # If sizes match, check etag/md5
+                    if local_size == remote_size:
+                        # Calculate MD5 of local file
+                        with open(to_path, 'rb') as file_data:
+                            local_md5 = hashlib.md5(file_data.read()).hexdigest()
+                        
+                        # MinIO etags are typically md5 hashes in quotes
+                        remote_md5 = remote_etag.strip('"')
+                        
+                        if local_md5 == remote_md5:
+                            print(
+                                f"File {to_path} already exists and is identical to {file_type}/{file_name}. Skipping download."
+                            )
+                            return
+                except Exception as e:
+                    # If any error occurs during verification, proceed with download
+                    print(f"Error verifying file, will download: {str(e)}")
+            
+            # If we get here, either the file doesn't exist locally or is different
             self.client.fget_object(
                 file_type,
                 file_name,
